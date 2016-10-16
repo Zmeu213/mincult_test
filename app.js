@@ -4,14 +4,16 @@ var db = pgp(conString)
 
 var Validator = require('jsonschema').Validator;
 var v = new Validator();
-var instance = 'kek';
 var schema = require('./schema')
+
+var data = require('./data')
 
 var _ = require("underscore")
 
-function checkJSON (id) {
-	return db.oneOrNone("select json from sample_table where id =" + id)
-}
+// for (var i in data) {
+// 	console.log(data[i]);
+// 	db.none("insert into sample_table(json) values ('" + JSON.stringify(data[i]) + "')")
+// }
 
 function removeNames (obj) {
 	var keys = _.keys(obj)
@@ -32,7 +34,15 @@ function removeNames (obj) {
 db.any("select json from sample_table")
 .then(function(data){
 	for (var i in data) {
-		console.log(removeNames(data[i].json));
+		var likeSchema = v.validate(data[i].json, schema).errors == 0
+		console.log(likeSchema)
+		if (likeSchema) {
+			var noName = removeNames(data[i].json);
+			console.log('Good:', noName);
+			db.none("insert into another_table(json) values ('" + JSON.stringify(noName) + "')")
+		} else {
+			console.log('Bad:',removeNames(data[i].json));
+		}
 	}
 }, function(error){
 	console.log(error)
