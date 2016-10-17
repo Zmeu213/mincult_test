@@ -34,14 +34,16 @@ function removeNames (obj) {
 db.any("select json from sample_table")
 .then(function(data){
 	for (var i in data) {
-		var likeSchema = v.validate(data[i].json, schema).errors == 0
-		console.log(likeSchema)
+		var errors = v.validate(data[i].json, schema).errors;
+		var likeSchema = errors == 0
+		console.log("element №" + (parseInt(i)+1), likeSchema ? "Tnis element is valid" : "This element is not valid, errors:")
+		console.log(likeSchema ? "No errors in structure" : errors);
 		if (likeSchema) {
 			var noName = removeNames(data[i].json);
-			console.log('Good:', noName);
+			// console.log('Good:', noName);
 			db.none("insert into another_table(json) values ('" + JSON.stringify(noName) + "')")
 		} else {
-			console.log('Bad:',removeNames(data[i].json));
+			// console.log('Bad:',removeNames(data[i].json));
 		}
 	}
 }, function(error){
